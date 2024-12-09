@@ -22,7 +22,6 @@ plt.show()
 
 env.render_axis = ax
 
-
 observation = env.reset()
 for i in range(1000):
     #env.calc_human_future_traj('truth')
