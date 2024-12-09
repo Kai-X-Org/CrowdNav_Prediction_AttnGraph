@@ -10,7 +10,7 @@ from crowd_sim.envs.utils.human import Human
 from crowd_sim.envs.utils.state import JointState
 
 
-class CrowdSimVarNum(CrowdSim):
+class CrowdSimVarNumScenic(CrowdSim):
     """
     The environment for our model with no trajectory prediction, or the baseline models with no prediction
     The number of humans at each timestep can change within a range
@@ -57,12 +57,9 @@ class CrowdSimVarNum(CrowdSim):
         high = np.inf * np.ones([2, ])
         self.action_space = gym.spaces.Box(-high, high, dtype=np.float32)
 
-
-    # set robot initial state and generate all humans for reset function
-    # for crowd nav: human_num == self.human_num
-    # for leader follower: human_num = self.human_num - 1
-    def generate_robot_humans(self, phase, human_num=None):
+    def generate_robot_humans_scenic(self, phase, agent_params, human_num=None):
         if self.record:
+            # TODO don't touch this just yet
             px, py = 0, 0
             gx, gy = 0, -1.5
             self.robot.set(px, py, gx, gy, 0, 0, np.pi / 2)
@@ -77,14 +74,20 @@ class CrowdSimVarNum(CrowdSim):
             # for sim2real
             if self.robot.kinematics == 'unicycle':
                 # generate robot
-                angle = np.random.uniform(0, np.pi * 2)
-                px = self.arena_size * np.cos(angle)
-                py = self.arena_size * np.sin(angle)
-                while True:
-                    gx, gy = np.random.uniform(-self.arena_size, self.arena_size, 2)
-                    if np.linalg.norm([px - gx, py - gy]) >= 4:  # 1 was 6
-                        break
-                self.robot.set(px, py, gx, gy, 0, 0, np.random.uniform(0, 2 * np.pi))  # randomize init orientation
+                robot_params = agent_params["robot"]
+                yaw = robot_params["yaw"] 
+                px = robot_params["px"]
+                py = robot_params["py"]
+                gx = robot_params["gx"] # the x position of the goal
+                gy = robot_params["gy"] # the y position of the goal
+                
+                # TODO encode the following conditions in Scenic
+                # while True:
+                    # gx, gy = np.random.uniform(-self.arena_size, self.arena_size, 2)
+                    # if np.linalg.norm([px - gx, py - gy]) >= 4:  # 1 was 6
+                        # break
+
+                self.robot.set(px, py, gx, gy, 0, 0, yaw)  # randomize init orientation
                 # 1 to 4 humans
                 self.human_num = np.random.randint(1, self.config.sim.human_num + self.human_num_range + 1)
                 # print('human_num:', self.human_num)
@@ -104,46 +107,12 @@ class CrowdSimVarNum(CrowdSim):
                                                    high=self.config.sim.human_num + self.human_num_range + 1)
 
 
-            self.generate_random_human_position(human_num=self.human_num)
+            self.generate_random_human_position_scenic(human_num=self.human_num)
             self.last_human_states = np.zeros((self.human_num, 5))
             # set human ids
             for i in range(self.human_num):
                 self.humans[i].id = i
 
-
-
-    # generate a human that starts on a circle, and its goal is on the opposite side of the circle
-    def generate_circle_crossing_human(self):
-        human = Human(self.config, 'humans')
-        if self.randomize_attributes:
-            human.sample_random_attributes()
-
-        while True:
-            angle = np.random.random() * np.pi * 2
-            # add some noise to simulate all the possible cases robot could meet with human
-            noise_range = 2
-            px_noise = np.random.uniform(0, 1) * noise_range
-            py_noise = np.random.uniform(0, 1) * noise_range
-            px = self.circle_radius * np.cos(angle) + px_noise
-            py = self.circle_radius * np.sin(angle) + py_noise
-            collide = False
-
-            for i, agent in enumerate([self.robot] + self.humans):
-                # keep human at least 3 meters away from robot
-                if self.robot.kinematics == 'unicycle' and i == 0:
-                    min_dist = self.circle_radius / 2  # Todo: if circle_radius <= 4, it will get stuck here
-                else:
-                    min_dist = human.radius + agent.radius + self.discomfort_dist
-                if norm((px - agent.px, py - agent.py)) < min_dist or \
-                        norm((px - agent.gx, py - agent.gy)) < min_dist:
-                    collide = True
-                    break
-            if not collide:
-                break
-
-        human.set(px, py, -px, -py, 0, 0, 0)
-
-        return human
 
     # TODO might have to add arguments for attributes, too
     def generate_circle_crossing_human_scenic(self, px, py):
@@ -151,29 +120,8 @@ class CrowdSimVarNum(CrowdSim):
         if self.randomize_attributes:
             human.sample_random_attributes()
 
-        while True:
-            angle = np.random.random() * np.pi * 2
-            # add some noise to simulate all the possible cases robot could meet with human
-            noise_range = 2
-            px_noise = np.random.uniform(0, 1) * noise_range
-            py_noise = np.random.uniform(0, 1) * noise_range
-            px = self.circle_radius * np.cos(angle) + px_noise
-            py = self.circle_radius * np.sin(angle) + py_noise
-            collide = False
-
-            for i, agent in enumerate([self.robot] + self.humans):
-                # keep human at least 3 meters away from robot
-                if self.robot.kinematics == 'unicycle' and i == 0:
-                    min_dist = self.circle_radius / 2  # Todo: if circle_radius <= 4, it will get stuck here
-                else:
-                    min_dist = human.radius + agent.radius + self.discomfort_dist
-                if norm((px - agent.px, py - agent.py)) < min_dist or \
-                        norm((px - agent.gx, py - agent.gy)) < min_dist:
-                    collide = True
-                    break
-            if not collide:
-                break
-
+        # TODO do collision checking and min_dist constraing in scenic
+        # reference generate_circle_crossing_human for the requirement
         human.set(px, py, -px, -py, 0, 0, 0)
         return human
 
@@ -369,7 +317,7 @@ class CrowdSimVarNum(CrowdSim):
         self.rand_seed = counter_offset[phase] + self.case_counter[phase] + self.thisSeed
         np.random.seed(self.rand_seed)
 
-        self.generate_robot_humans(phase)
+        self.generate_robot_humans_scenic(phase)
 
         # record px, py, r of each human, used for crowd_sim_pc env
         self.cur_human_states = np.zeros((self.max_human_num, 3))
@@ -461,7 +409,7 @@ class CrowdSimVarNum(CrowdSim):
                     for i in range(self.human_num, self.human_num + add_num):
                         if i == self.config.sim.human_num + self.human_num_range:
                             break
-                        self.generate_random_human_position(human_num=1)
+                        self.generate_random_human_position_scenic(human_num=1) # TODO this may or may not be righ
                         self.humans[i].id = i
                         true_add_num = true_add_num + 1
                     self.human_num = self.human_num + true_add_num
