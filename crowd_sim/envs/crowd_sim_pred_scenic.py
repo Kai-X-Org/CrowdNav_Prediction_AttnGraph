@@ -20,7 +20,7 @@ class CrowdSimPredScenic(CrowdSimVarNumScenic):
         humans are controlled by a unknown and fixed policy.
         robot is controlled by a known and learnable policy.
         """
-        super(CrowdSimPred, self).__init__()
+        super(CrowdSimPredScenic, self).__init__()
         self.pred_method = None
         self.cur_human_states=None
 
