@@ -8,7 +8,7 @@ from crowd_sim.envs.crowd_sim_var_num import CrowdSimVarNum
 
 
 
-class CrowdSimPredScenic(CrowdSimVarNum):
+class CrowdSimPredScenic(CrowdSimVarNumScenic):
     """
     The environment for our model with non-neural network trajectory predictors, including const vel predictor and ground truth predictor
     The number of humans at each timestep can change within a range
@@ -210,7 +210,7 @@ class CrowdSimPredScenic(CrowdSimVarNum):
         if self.end_goal_changing and not self.record:
             for i, human in enumerate(self.humans):
                 if norm((human.gx - human.px, human.gy - human.py)) < human.radius:
-                    self.humans[i] = self.generate_circle_crossing_human()
+                    self.humans[i] = self.generate_circle_crossing_human_scenic() # FIXME, should this be scenic or not?
                     self.humans[i].id = i
 
         return ob, reward, done, info
