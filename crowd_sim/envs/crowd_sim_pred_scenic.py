@@ -8,7 +8,7 @@ from crowd_sim.envs.crowd_sim_var_num import CrowdSimVarNum
 
 
 
-class CrowdSimPred(CrowdSimVarNum):
+class CrowdSimPredScenic(CrowdSimVarNum):
     """
     The environment for our model with non-neural network trajectory predictors, including const vel predictor and ground truth predictor
     The number of humans at each timestep can change within a range
@@ -164,34 +164,35 @@ class CrowdSimPred(CrowdSimVarNum):
 
         # Add or remove at most self.human_num_range humans
         # if self.human_num_range == 0 -> human_num is fixed at all times
-        if self.human_num_range > 0 and self.global_time % 5 == 0:
-            # remove humans
-            if np.random.rand() < 0.5:
-                # if no human is visible, anyone can be removed
-                if len(self.observed_human_ids) == 0:
-                    max_remove_num = self.human_num - 1
-                else:
-                    max_remove_num = (self.human_num - 1) - max(self.observed_human_ids)
-                remove_num = np.random.randint(low=0, high=min(self.human_num_range, max_remove_num) + 1)
-                for _ in range(remove_num):
-                    self.humans.pop()
-                self.human_num = self.human_num - remove_num
-                self.last_human_states = self.last_human_states[:self.human_num]
-            # add humans
-            else:
-                add_num = np.random.randint(low=0, high=self.human_num_range + 1)
-                if add_num > 0:
-                    # set human ids
-                    true_add_num = 0
-                    for i in range(self.human_num, self.human_num + add_num):
-                        if i == self.config.sim.human_num + self.human_num_range:
-                            break
-                        self.generate_random_human_position(human_num=1)
-                        self.humans[i].id = i
-                        true_add_num = true_add_num + 1
-                    self.human_num = self.human_num + true_add_num
-                    if true_add_num > 0:
-                        self.last_human_states = np.concatenate((self.last_human_states, np.array([[15, 15, 0, 0, 0.3]]*true_add_num)), axis=0)
+        # if self.human_num_range > 0 and self.global_time % 5 == 0:
+            # # remove humans
+            # if np.random.rand() < 0.5:
+                # # if no human is visible, anyone can be removed
+                # if len(self.observed_human_ids) == 0:
+                    # max_remove_num = self.human_num - 1
+                # else:
+                    # max_remove_num = (self.human_num - 1) - max(self.observed_human_ids)
+                # remove_num = np.random.randint(low=0, high=min(self.human_num_range, max_remove_num) + 1)
+                # for _ in range(remove_num):
+                    # self.humans.pop()
+                # self.human_num = self.human_num - remove_num
+                # self.last_human_states = self.last_human_states[:self.human_num]
+            # # add humans
+            # else:
+                # add_num = np.random.randint(low=0, high=self.human_num_range + 1)
+                # if add_num > 0:
+                    # # set human ids
+                    # true_add_num = 0
+                    # for i in range(self.human_num, self.human_num + add_num):
+                        # if i == self.config.sim.human_num + self.human_num_range:
+                            # break
+                        # # FIXME might not even need any of this...the Scenic env might actually be a lot simpler!!!
+                        # self.generate_random_human_position(human_num=1)
+                        # self.humans[i].id = i
+                        # true_add_num = true_add_num + 1
+                    # self.human_num = self.human_num + true_add_num
+                    # if true_add_num > 0:
+                        # self.last_human_states = np.concatenate((self.last_human_states, np.array([[15, 15, 0, 0, 0.3]]*true_add_num)), axis=0)
 
 
         # compute the observation
@@ -199,11 +200,13 @@ class CrowdSimPred(CrowdSimVarNum):
 
 
         # Update all humans' goals randomly midway through episode
+        # FIXME should this be done by Scenic?
         if self.random_goal_changing:
             if self.global_time % 5 == 0:
                 self.update_human_goals_randomly()
 
         # Update a specific human's goal once its reached its original goal
+        # FIXME should this be done by Scenic?
         if self.end_goal_changing and not self.record:
             for i, human in enumerate(self.humans):
                 if norm((human.gx - human.px, human.gy - human.py)) < human.radius:
