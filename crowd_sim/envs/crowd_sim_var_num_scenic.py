@@ -89,35 +89,25 @@ class CrowdSimVarNumScenic(CrowdSim):
 
                 self.robot.set(px, py, gx, gy, 0, 0, yaw)  # randomize init orientation
                 # 1 to 4 humans
-                self.human_num = np.random.randint(1, self.config.sim.human_num + self.human_num_range + 1)
+                # FIXME temporarily fixing human nums due to Scenic?
+                # self.human_num = np.random.randint(1, self.config.sim.human_num + self.human_num_range + 1)
+                self.human_num = len(agent_params - 1)
                 # print('human_num:', self.human_num)
                 # self.human_num = 4
+            # TODO there was originally an else block here for when we are not in unicycle model...
+            # should be fine, but check it if we get problems
 
-
-            # for sim exp
-            # probably don't need this part for scenic stuff
-            # else:
-                # # generate robot
-                # while True:
-                    # px, py, gx, gy = np.random.uniform(-self.arena_size, self.arena_size, 4)
-                    # if np.linalg.norm([px - gx, py - gy]) >= 8: # 6
-                        # break
-                # self.robot.set(px, py, gx, gy, 0, 0, np.pi / 2)
-                # # generate humans
-                # self.human_num = np.random.randint(low=self.config.sim.human_num - self.human_num_range,
-                                                   # high=self.config.sim.human_num + self.human_num_range + 1)
-
-
-            self.generate_random_human_position_scenic(human_num=self.human_num)
+            self.generate_random_human_position_scenic(human_num=self.human_num, agent_params=agent_params)
             self.last_human_states = np.zeros((self.human_num, 5))
             # set human ids
             for i in range(self.human_num):
                 self.humans[i].id = i
 
-    def generate_random_human_position_scenic(human_num=0, state_dict=dict()):
-        for k in state_dict.key():
-            agent_state = state_dict[k]
-            if agent_state["object_type"] == "human":
+    def generate_random_human_position_scenic(human_num=0, agent_params=dict()):
+        for k in state_dict.keys():
+            agent_state = agent_params[k]
+            # if agent_state["object_type"] == "human":
+            if k != "robot" :
                 self.humans.append(self.generate_circle_crossing_human_scenic(agent_state["px"], agent_state["py"]))
 
 
@@ -287,7 +277,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         human.gy = gy
 
 
-    def reset(self, phase='train', test_case=None, state_dict=dict()): # TODO state dict is the dict with the spawning state of all the agents
+    def reset(self, phase='train', test_case=None, agent_params=dict()): # TODO state dict is the dict with the spawning state of all the agents
         """
         Reset the environment
         :return:
@@ -325,9 +315,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         self.rand_seed = counter_offset[phase] + self.case_counter[phase] + self.thisSeed
         np.random.seed(self.rand_seed)
 
-        # self.generate_robot_humans_scenic(phase) # FIXME this line should be changed
-        for key in state_dict():
-            ...
+        self.generate_robot_humans_scenic(phase, agent_params=agent_params) # FIXME this line should be changed
 
         # record px, py, r of each human, used for crowd_sim_pc env
         self.cur_human_states = np.zeros((self.max_human_num, 3))
