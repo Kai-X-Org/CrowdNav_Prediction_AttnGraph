@@ -28,14 +28,18 @@ for j in range(10):
         #env.calc_human_future_traj('truth')
         action = env.action_space.sample()  # User-defined policy function
         observation, reward, terminated, info = env.step(action)
-        # if j % 10 == 0:
-            # print(observation['robot_node'])
+        if j % 10 == 0:
+            print(observation['robot_node'])
 
+        if j % 50 == 0:
+            print(f"bot_pos = {env.robot.px, env.robot.py}")
+            print(f"0th human_pos = {env.human[0].px, env.human[1].py}")
 
         env.render()
-        # if j % 50 == 0:
-        print(f"bot_pos = {env.robot.px, env.robot.py}")
-        print(f"0th human_pos = {env.humans[0].px, env.humans[1].py}")
+        if j % 50 == 0:
+            print(f"bot_pos = {env.robot.px, env.robot.py}")
+            print(f"0th human_pos = {env.humans[0].px, env.humans[1].py}")
+            input("input to continue")
 
         if terminated:
             observation = env.reset()
