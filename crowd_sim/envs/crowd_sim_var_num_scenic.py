@@ -117,8 +117,6 @@ class CrowdSimVarNumScenic(CrowdSim):
     # TODO might have to add arguments for attributes, too
     def generate_circle_crossing_human_scenic(self, px, py):
         human = Human(self.config, 'humans')
-        if self.randomize_attributes:
-            human.sample_random_attributes()
 
         # TODO do collision checking and min_dist constraing in scenic
         # reference generate_circle_crossing_human for the requirement
