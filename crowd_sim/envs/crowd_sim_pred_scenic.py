@@ -30,8 +30,8 @@ class CrowdSimPredScenic(CrowdSimVarNumScenic):
         # 'const_vel', 'truth', or 'inferred'
         self.pred_method = config.sim.predict_method
 
-    def reset(self, phase='train', test_case=None):
-        ob = super().reset(phase=phase, test_case=test_case)
+    def reset(self, phase='train', test_case=None, state_dict = dict()):
+        ob = super().reset(phase=phase, test_case=test_case, state_dict)
         return ob
 
     # set observation space and action space

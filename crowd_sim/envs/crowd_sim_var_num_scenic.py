@@ -280,7 +280,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         human.gy = gy
 
 
-    def reset(self, phase='train', test_case=None):
+    def reset(self, phase='train', test_case=None, state_dict=dict()): # TODO state dict is the dict with the spawning state of all the agents
         """
         Reset the environment
         :return:
@@ -296,6 +296,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         assert phase in ['train', 'val', 'test']
         if test_case is not None:
             self.case_counter[phase] = test_case # test case is passed in to calculate specific seed to generate case
+
         self.global_time = 0
         self.step_counter = 0
         self.id_counter = 0
@@ -317,7 +318,9 @@ class CrowdSimVarNumScenic(CrowdSim):
         self.rand_seed = counter_offset[phase] + self.case_counter[phase] + self.thisSeed
         np.random.seed(self.rand_seed)
 
-        self.generate_robot_humans_scenic(phase)
+        # self.generate_robot_humans_scenic(phase) # FIXME this line should be changed
+        for key in state_dict():
+            ...
 
         # record px, py, r of each human, used for crowd_sim_pc env
         self.cur_human_states = np.zeros((self.max_human_num, 3))
@@ -325,12 +328,12 @@ class CrowdSimVarNumScenic(CrowdSim):
             self.cur_human_states[i] = np.array([self.humans[i].px, self.humans[i].py, self.humans[i].radius])
 
         # case size is used to make sure that the case_counter is always between 0 and case_size[phase]
-        self.case_counter[phase] = (self.case_counter[phase] + int(1*self.nenv)) % self.case_size[phase]
+        self.case_counter[phase] = (self.case_counter[phase] + int(1*self.nenv)) % self.case_size[phase] # FIXME figure out what this is
 
         # initialize potential and angular potential
         rob_goal_vec = np.array([self.robot.gx, self.robot.gy]) - np.array([self.robot.px, self.robot.py])
         self.potential = -abs(np.linalg.norm(rob_goal_vec))
-        self.angle = np.arctan2(rob_goal_vec[1], rob_goal_vec[0]) - self.robot.theta
+        self.angle = np.arctan2(rob_goal_vec[1], rob_goal_vec[0]) - self.robot.theta # angle offset (direction of goal - direction robot is facint)
         if self.angle > np.pi:
             # self.abs_angle = np.pi * 2 - self.abs_angle
             self.angle = self.angle - 2 * np.pi
