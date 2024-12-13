@@ -95,16 +95,17 @@ class CrowdSimVarNumScenic(CrowdSim):
 
 
             # for sim exp
-            else:
-                # generate robot
-                while True:
-                    px, py, gx, gy = np.random.uniform(-self.arena_size, self.arena_size, 4)
-                    if np.linalg.norm([px - gx, py - gy]) >= 8: # 6
-                        break
-                self.robot.set(px, py, gx, gy, 0, 0, np.pi / 2)
-                # generate humans
-                self.human_num = np.random.randint(low=self.config.sim.human_num - self.human_num_range,
-                                                   high=self.config.sim.human_num + self.human_num_range + 1)
+            # probably don't need this part for scenic stuff
+            # else:
+                # # generate robot
+                # while True:
+                    # px, py, gx, gy = np.random.uniform(-self.arena_size, self.arena_size, 4)
+                    # if np.linalg.norm([px - gx, py - gy]) >= 8: # 6
+                        # break
+                # self.robot.set(px, py, gx, gy, 0, 0, np.pi / 2)
+                # # generate humans
+                # self.human_num = np.random.randint(low=self.config.sim.human_num - self.human_num_range,
+                                                   # high=self.config.sim.human_num + self.human_num_range + 1)
 
 
             self.generate_random_human_position_scenic(human_num=self.human_num)
@@ -112,6 +113,12 @@ class CrowdSimVarNumScenic(CrowdSim):
             # set human ids
             for i in range(self.human_num):
                 self.humans[i].id = i
+
+    def generate_random_human_position_scenic(human_num=0, state_dict=dict()):
+        for k in state_dict.key():
+            agent_state = state_dict[k]
+            if agent_state["object_type"] == "human":
+                self.humans.append(self.generate_circle_crossing_human_scenic(agent_state["px"], agent_state["py"]))
 
 
     # TODO might have to add arguments for attributes, too
