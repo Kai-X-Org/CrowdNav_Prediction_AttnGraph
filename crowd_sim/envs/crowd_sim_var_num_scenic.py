@@ -31,7 +31,7 @@ class CrowdSimVarNumScenic(CrowdSim):
 
     def configure(self, config):
         """ read the config to the environment variables """
-        super(CrowdSimVarNum, self).configure(config)
+        super(CrowdSimVarNumScenic, self).configure(config)
         self.action_type=config.action_space.kinematics
 
     # set observation space and action space
@@ -105,8 +105,8 @@ class CrowdSimVarNumScenic(CrowdSim):
             for i in range(self.human_num):
                 self.humans[i].id = i
 
-    def generate_random_human_position_scenic(human_num=0, agent_params=dict()):
-        for k in state_dict.keys():
+    def generate_random_human_position_scenic(self, human_num=0, agent_params=dict()):
+        for k in agent_params.keys():
             agent_state = agent_params[k]
             if k != "robot" :
                 human = self.generate_circle_crossing_human_scenic(agent_state["px"], agent_state["py"])
@@ -219,7 +219,7 @@ class CrowdSimVarNumScenic(CrowdSim):
 
         ob['robot_node'] = self.robot.get_full_state_list_noV()
 
-        prev_human_pos = copy.deepcopy(self.last_human_states)
+        self.prev_human_pos = copy.deepcopy(self.last_human_states)
         self.update_last_human_states(self.human_visibility, reset=reset)
 
         # edges
