@@ -303,6 +303,7 @@ class CrowdSimVarNumScenic(CrowdSim):
 
 
         self.humans = []
+        self.human_dict = dict()
         # self.human_num = self.config.sim.human_num
         # initialize a list to store observed humans' IDs
         self.observed_human_ids = []
