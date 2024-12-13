@@ -109,15 +109,19 @@ class CrowdSimVarNumScenic(CrowdSim):
         for k in agent_params.keys():
             agent_state = agent_params[k]
             if k != "robot" :
-                human = self.generate_circle_crossing_human_scenic(agent_state["px"], agent_state["py"])
+                human = self.generate_circle_crossing_human_scenic(agent_state["px"], 
+                                                                   agent_state["py"],
+                                                                   agent_state["radius"],
+                                                                   agent_state["v_pref"])
                 self.humans.append(human)
                 self.human_dict[k] = human
 
 
     # TODO might have to add arguments for attributes, too
-    def generate_circle_crossing_human_scenic(self, px, py):
+    def generate_circle_crossing_human_scenic(self, px, py, radius, v_pref):
         human = Human(self.config, 'humans')
-
+        human.v_pref = v_pref
+        human.radius = radius
         # TODO do collision checking and min_dist constraing in scenic
         # reference generate_circle_crossing_human for the requirement
         human.set(px, py, -px, -py, 0, 0, 0)
