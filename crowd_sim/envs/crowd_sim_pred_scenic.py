@@ -4,7 +4,7 @@ from numpy.linalg import norm
 import copy
 
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
-from crowd_sim.envs.crowd_sim_var_num import CrowdSimVarNum
+from crowd_sim.envs.crowd_sim_var_num_scenic import CrowdSimVarNumScenic
 
 
 
@@ -30,8 +30,8 @@ class CrowdSimPredScenic(CrowdSimVarNumScenic):
         # 'const_vel', 'truth', or 'inferred'
         self.pred_method = config.sim.predict_method
 
-    def reset(self, phase='train', test_case=None, state_dict = dict()):
-        ob = super().reset(phase=phase, test_case=test_case, state_dict)
+    def reset(self, phase='train', test_case=None, agent_params = dict()):
+        ob = super().reset(phase=phase, test_case=test_case, agent_params=agent_params)
         return ob
 
     # set observation space and action space
