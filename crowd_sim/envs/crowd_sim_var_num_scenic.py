@@ -26,6 +26,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         self.id_counter = None
         self.observed_human_ids = None
         self.pred_method = None
+        self.human_dict = dict()
 
 
     def configure(self, config):
@@ -88,12 +89,13 @@ class CrowdSimVarNumScenic(CrowdSim):
                         # break
 
                 self.robot.set(px, py, gx, gy, 0, 0, yaw)  # randomize init orientation
+
                 # 1 to 4 humans
                 # FIXME temporarily fixing human nums due to Scenic?
-                # self.human_num = np.random.randint(1, self.config.sim.human_num + self.human_num_range + 1)
+                # originally there is a line here to determine human_num
+
                 self.human_num = len(agent_params - 1)
-                # print('human_num:', self.human_num)
-                # self.human_num = 4
+
             # TODO there was originally an else block here for when we are not in unicycle model...
             # should be fine, but check it if we get problems
 
@@ -106,9 +108,10 @@ class CrowdSimVarNumScenic(CrowdSim):
     def generate_random_human_position_scenic(human_num=0, agent_params=dict()):
         for k in state_dict.keys():
             agent_state = agent_params[k]
-            # if agent_state["object_type"] == "human":
             if k != "robot" :
-                self.humans.append(self.generate_circle_crossing_human_scenic(agent_state["px"], agent_state["py"]))
+                human = self.generate_circle_crossing_human_scenic(agent_state["px"], agent_state["py"])
+                self.humans.append(human)
+                self.human_dict[k] = human
 
 
     # TODO might have to add arguments for attributes, too
