@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 
-from crowd_sim.envs.crowd_sim_pred import CrowdSimPred
+from crowd_sim.envs.crowd_sim_pred_scenic import CrowdSimPredScenic
 
 
 class CrowdSimPredRealGSTScenic(CrowdSimPredScenic):
@@ -78,7 +78,7 @@ class CrowdSimPredRealGSTScenic(CrowdSimPredScenic):
         # since gst pred model needs ID tracking, don't sort all humans
         # inherit from crowd_sim_lstm, not crowd_sim_pred to avoid computation of true pred!
         # sort=False because we will sort in wrapper in vec_pretext_normalize.py later
-        parent_ob = super(CrowdSimPred, self).generate_ob(reset=reset, sort=False)
+        parent_ob = super(CrowdSimPredScenic, self).generate_ob(reset=reset, sort=False)
 
         # add additional keys, removed unused keys
         ob = {}
@@ -97,7 +97,7 @@ class CrowdSimPredRealGSTScenic(CrowdSimPredScenic):
     def calc_reward(self, action, danger_zone='future'):
         # inherit from crowd_sim_lstm, not crowd_sim_pred to prevent social reward calculation
         # since we don't know the GST predictions yet
-        reward, done, episode_info = super(CrowdSimPred, self).calc_reward(action, danger_zone=danger_zone)
+        reward, done, episode_info = super(CrowdSimPredScenic, self).calc_reward(action, danger_zone=danger_zone)
         return reward, done, episode_info
 
 
