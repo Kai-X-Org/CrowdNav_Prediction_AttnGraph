@@ -127,6 +127,38 @@ class CrowdSimVarNumScenic(CrowdSim):
         human.set(px, py, -px, -py, 0, 0, 0)
         return human
 
+    def generate_circle_crossing_human_no_scenic(self, radius, v_pref):
+        human = Human(self.config, 'humans')
+        human.v_pref = v_pref
+        human.radius = radius
+
+        while True:
+            angle = np.random.random() * np.pi * 2
+            # add some noise to simulate all the possible cases robot could meet with human
+            noise_range = 2
+            px_noise = np.random.uniform(0, 1) * noise_range
+            py_noise = np.random.uniform(0, 1) * noise_range
+            px = self.circle_radius * np.cos(angle) + px_noise
+            py = self.circle_radius * np.sin(angle) + py_noise
+            collide = False
+
+            for i, agent in enumerate([self.robot] + self.humans):
+                # keep human at least 3 meters away from robot
+                if self.robot.kinematics == 'unicycle' and i == 0:
+                    min_dist = self.circle_radius / 2  # Todo: if circle_radius <= 4, it will get stuck here
+                else:
+                    min_dist = human.radius + agent.radius + self.discomfort_dist
+                if norm((px - agent.px, py - agent.py)) < min_dist or \
+                        norm((px - agent.gx, py - agent.gy)) < min_dist:
+                    collide = True
+                    break
+            if not collide:
+                break
+
+        human.set(px, py, -px, -py, 0, 0, 0)
+        return human
+
+
     # calculate the ground truth future trajectory of humans
     # if robot is visible: assume linear motion for robot
     # ret val: [self.predict_steps + 1, self.human_num, 4]
@@ -436,8 +468,8 @@ class CrowdSimVarNumScenic(CrowdSim):
             for i, human in enumerate(self.humans):
                 if norm((human.gx - human.px, human.gy - human.py)) < human.radius:
                     if self.robot.kinematics == 'holonomic':
-                        self.humans[i] = self.generate_circle_crossing_human()
-                        self.humans[i].id = i
+                        self.humans[i] = self.generate_circle_crossing_human_no_scenic(human.radius, human.v_pref)
+                        self.humans[i].id = i # FIXME populate the human dict, too???
                     else:
                         self.update_human_goal(human)
 

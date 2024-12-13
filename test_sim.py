@@ -22,16 +22,17 @@ plt.show()
 
 env.render_axis = ax
 
-observation = env.reset()
-for i in range(1000):
-    #env.calc_human_future_traj('truth')
-    action = env.action_space.sample()  # User-defined policy function
-    observation, reward, terminated, info = env.step(action)
-    if i % 10 == 0:
-        print(observation['robot_node'])
+for j in range(10):
+    observation = env.reset()
+    for j in range(100):
+        #env.calc_human_future_traj('truth')
+        action = env.action_space.sample()  # User-defined policy function
+        observation, reward, terminated, info = env.step(action)
+        if j % 10 == 0:
+            print(observation['robot_node'])
 
-    env.render()
-    if terminated:
-        observation = env.reset()
+        env.render()
+        if terminated:
+            observation = env.reset()
 
 env.close()
