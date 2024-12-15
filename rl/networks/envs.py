@@ -16,6 +16,7 @@ from rl.networks.shmem_vec_env import ShmemVecEnv
 from baselines.common.vec_env.vec_normalize import \
     VecNormalize as VecNormalize_
 from rl.vec_env.vec_pretext_normalize import VecPretextNormalize
+from scenic.gym import ScenicOAI15GymEnv
 
 try:
     import dm_control2gym
@@ -31,6 +32,117 @@ try:
     import pybullet_envs
 except ImportError:
     pass
+
+
+
+def make_env_scenic(scenario, simulator, seed, rank, log_dir, allow_early_resets, config=None, envNum=1, ax=None, test_case=-1):
+    def _thunk():
+        # if env_id.startswith("dm"):
+            # _, domain, task = env_id.split('.')
+            # env = dm_control2gym.make(domain_name=domain, task_name=task)
+        # else:
+            # env = gym.make(env_id)
+
+        # is_atari = hasattr(gym.envs, 'atari') and isinstance(
+            # env.unwrapped, gym.envs.atari.atari_env.AtariEnv)
+        # if is_atari:
+            # env = make_atari(env_id)
+
+        env = ScenicOAI15GymEnv(scenario, simulator, max_steps=50)
+
+        # env.configure(config)
+
+        envSeed = seed + rank if seed is not None else None
+        # environment.render_axis = ax
+        simulator.env.thisSeed = envSeed
+        simulator.env.nenv = envNum
+        if envNum > 1:
+            simulator.env.phase = 'train'
+        else:
+            simulator.env.phase = 'test'
+
+        if ax:
+            simulator.env.render_axis = ax
+            if test_case >= 0:
+                simulator.env.test_case = test_case
+        simulator.env.seed(seed + rank)
+
+        if str(env.__class__.__name__).find('TimeLimit') >= 0:
+            env = TimeLimitMask(env) # This should just be env
+
+        # if log_dir is not None:
+        env = bench.Monitor(
+            env,
+            None,
+            allow_early_resets=allow_early_resets)
+        print(env)
+
+        if isinstance(env.observation_space, Box):
+            # if is_atari:
+                # if len(env.observation_space.shape) == 3:
+                    # env = wrap_deepmind(env)
+            if len(env.observation_space.shape) == 3:
+                raise NotImplementedError(
+                    "CNN models work only for atari,\n"
+                    "please use a custom wrapper for a custom pixel input env.\n"
+                    "See wrap_deepmind for an example.")
+
+            # If the input has shape (W,H,3), wrap for PyTorch convolutions
+
+            obs_shape = env.observation_space.shape
+            if len(obs_shape) == 3 and obs_shape[2] in [1, 3]:
+                env = TransposeImage(env, op=[2, 0, 1])
+
+        return env
+
+    return _thunk
+
+
+def make_vec_envs_scenic(scenario_list, simulator_list,
+                  seed,
+                  num_processes,
+                  gamma,
+                  log_dir,
+                  device,
+                  allow_early_resets,
+                  num_frame_stack=None,
+                  config=None,
+                  ax=None, test_case=-1, wrap_pytorch=True, pretext_wrapper=False):
+    envs = [
+        make_env_scenic(scenario_list[i], simulator_list[i], seed, i, log_dir, allow_early_resets, config=config,
+                 envNum=num_processes, ax=ax, test_case=test_case)
+        for i in range(num_processes)
+    ]
+    test = False if len(envs) > 1 else True
+
+    if len(envs) > 1:
+        envs = ShmemVecEnv(envs, context='fork')
+    else:
+        envs = DummyVecEnv(envs)
+    # for collect data in supervised learning, we don't need to wrap pytorch
+    if wrap_pytorch:
+        if isinstance(envs.observation_space, Box):
+            if len(envs.observation_space.shape) == 1:
+                if gamma is None:
+                    envs = VecNormalize(envs, ret=False, ob=False)
+                else:
+                    envs = VecNormalize(envs, gamma=gamma, ob=False, ret=False)
+
+        envs = VecPyTorch(envs, device)
+    if pretext_wrapper:
+        if gamma is None:
+            envs = VecPretextNormalize(envs, ret=False, ob=False, config=config, test=test)
+        else:
+            envs = VecPretextNormalize(envs, gamma=gamma, ob=False, ret=False, config=config, test=test)
+
+    if num_frame_stack is not None:
+        envs = VecPyTorchFrameStack(envs, num_frame_stack, device)
+    elif isinstance(envs.observation_space, Box):
+        if len(envs.observation_space.shape) == 3:
+            envs = VecPyTorchFrameStack(envs, 4, device)
+
+    return envs
+
 
 
 def make_env(env_id, seed, rank, log_dir, allow_early_resets, config=None, envNum=1, ax=None, test_case=-1):
