@@ -94,7 +94,7 @@ class CrowdSimVarNumScenic(CrowdSim):
                 # FIXME temporarily fixing human nums due to Scenic?
                 # originally there is a line here to determine human_num
 
-                self.human_num = len(agent_params - 1)
+                self.human_num = len(agent_params) - 1
 
             # TODO there was originally an else block here for when we are not in unicycle model...
             # should be fine, but check it if we get problems
