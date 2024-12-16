@@ -14,15 +14,18 @@ render = True
 
 episode_over = False
 
-while not episode_over:
-    # action = env.action_space.sample_action() # dummy here ok this is not right
-    action = env.action_space.sample() # dummy here ok this is not right
-    observation, reward, terminated, truncated, info = env.step(action)
-    # print(observation[0]['position'])
-    episode_over = terminated or truncated
+for i in range(3):
+    while not episode_over:
+        # action = env.action_space.sample_action() # dummy here ok this is not right
+        action = env.action_space.sample() # dummy here ok this is not right
+        observation, reward, terminated, truncated, info = env.step(action)
+        # print(observation[0]['position'])
+        episode_over = terminated or truncated
 
-    if render:
-        env.render()
+        if render:
+            env.render()
+    env.reset()
+    print("finsih reset")
 
 
 env.close()
