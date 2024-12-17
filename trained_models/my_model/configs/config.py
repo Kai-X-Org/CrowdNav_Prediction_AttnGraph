@@ -215,7 +215,7 @@ class ConfigNoArgs(object):
     # 'truth': ground truth future traj (with info in robot's fov)
     # 'inferred': inferred future traj from GST network
     # 'none': no prediction
-    sim.predict_method = 'inferred'
+    sim.predict_method = 'const_vel'
     # render the simulation during training or not
     sim.render = False
 
