@@ -19,7 +19,7 @@ from rl.networks.storage import RolloutStorage
 from crowd_nav.configs.config import ConfigNoArgs
 from crowd_sim import *
 # from scenic.gym import ScenicOAI15GymEnv
-from scenic.simulators.crowd_sim import CrowdSimSimulator
+from scenic.simulators.crowd_sim.simulator import CrowdSimSimulator
 import scenic
 
 def main():
@@ -82,7 +82,7 @@ def main():
     else:
         ax = None
     
-    scenario_list = [scenic.scenarioFromFile('/Users/kxu/Scenic/src/scenic/simulators/crowd_sim/training_scenario.scenic',
+    scenario_list = [scenic.scenarioFromFile('/home/kxu/ScenicGym/src/scenic/simulators/crowd_sim/training_scenario.scenic',
                                         model="scenic.simulators.crowd_sim.model") for i in range(algo_args.num_processes)]
 
     simulator_list = [CrowdSimSimulator() for i in range(algo_args.num_processes)]
