@@ -26,6 +26,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         self.id_counter = None
         self.observed_human_ids = None
         self.pred_method = None
+        self.collision = False
         self.human_dict = dict()
 
 
@@ -287,7 +288,7 @@ class CrowdSimVarNumScenic(CrowdSim):
         Reset the environment
         :return:
         """
-
+        self.collision = False
         if self.phase is not None:
             phase = self.phase
         if self.test_case is not None:
@@ -460,6 +461,7 @@ class CrowdSimVarNumScenic(CrowdSim):
                 danger_dists.append(closest_dist)
             if closest_dist < 0:
                 collision = True
+                self.collision = True
                 break
             elif closest_dist < dmin:
                 dmin = closest_dist
