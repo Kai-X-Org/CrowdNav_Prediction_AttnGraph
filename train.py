@@ -16,7 +16,7 @@ from rl.networks.model import Policy
 from rl.networks.storage import RolloutStorage
 
 
-from crowd_nav.configs.config import Config
+from crowd_nav.configs.test_config import Config
 from crowd_sim import *
 
 
