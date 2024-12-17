@@ -182,6 +182,7 @@ def main():
                 envs.render()
             # Obser reward and next obs
             obs, reward, done, infos = envs.step(action)
+            # print(f"reward: {reward}")
 
 
             for info in infos:

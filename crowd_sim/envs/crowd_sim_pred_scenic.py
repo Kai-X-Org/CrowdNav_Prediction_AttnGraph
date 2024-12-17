@@ -65,6 +65,7 @@ class CrowdSimPredScenic(CrowdSimVarNumScenic):
 
         # nodes
         visible_humans, num_visibles, self.human_visibility = self.get_num_human_in_fov()
+        # print(f"NuM VISIBLE: {num_visibles}")
 
         ob['robot_node'] = self.robot.get_full_state_list_noV()
 

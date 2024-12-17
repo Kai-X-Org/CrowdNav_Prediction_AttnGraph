@@ -9,7 +9,9 @@ scenario = scenic.scenarioFromFile("/home/kxu/ScenicGym/src/scenic/simulators/cr
 # env = ScenicGymEnv(scenario, CrowdSimSimulator(), max_steps=50)
 env = ScenicOAI15GymEnv(scenario, CrowdSimSimulator(), max_steps=50)
 
-obs, info = env.reset()
+observation, info = env.reset()
+
+print(f"first reset obs: {observation['detected_human_num']}")
 # print(f"OBS {obs}, info {info}")
 render = True
 
@@ -24,6 +26,7 @@ for i in range(3):
             # print(f"Sampled action: {action}")
         # observation, reward, terminated, truncated, info = env.step(action)
         observation, reward, terminated, info = env.step(action)
+        # print(f"obs: {observation['detected_human_num']} episode {i}")
         # print(observation[0]['position'])
         # episode_over = terminated or truncated
         episode_over = terminated

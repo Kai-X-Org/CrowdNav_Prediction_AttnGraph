@@ -123,10 +123,23 @@ def _subproc_worker(pipe, parent_pipe, env_fn_wrapper, obs_bufs, obs_shapes, obs
     """
     def _write_obs(maybe_dict_obs):
         flatdict = obs_to_dict(maybe_dict_obs)
+        # print(f"flatdict: {flatdict}")
+
+        # try:
+            # print(f"flatdict human: {flatdict['detected_human_num']}")
+        # except:
+            # print(f"flat_dict error: {flatdict}")
+
         for k in keys:
+            # print(f"KEY {k}")
+            # print(f"obs_bufs: {obs_bufs}")
             dst = obs_bufs[k].get_obj()
+            # print(f"DST: {dst}")
             dst_np = np.frombuffer(dst, dtype=obs_dtypes[k]).reshape(obs_shapes[k])  # pylint: disable=W0212
-            np.copyto(dst_np, flatdict[k])
+            try:
+                np.copyto(dst_np, flatdict[k])
+            except:
+                np.copyto(dst_np, flatdict[None][0][k])
 
     env = env_fn_wrapper.x()
     parent_pipe.close()
@@ -134,7 +147,9 @@ def _subproc_worker(pipe, parent_pipe, env_fn_wrapper, obs_bufs, obs_shapes, obs
         while True:
             cmd, data = pipe.recv()
             if cmd == 'reset':
-                pipe.send(_write_obs(env.reset()))
+                reset_obs = env.reset()
+                # print(f"reset_obs as shown in shemem {reset_obs}")
+                pipe.send(_write_obs(reset_obs))
             elif cmd == 'step':
                 obs, reward, done, info = env.step(data)
                 if done:
