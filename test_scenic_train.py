@@ -3,7 +3,7 @@ import scenic
 from scenic.simulators.crowd_sim.simulator import CrowdSimSimulator 
 import numpy as np
 
-scenario = scenic.scenarioFromFile("/home/kxu/ScenicGym/src/scenic/simulators/crowd_sim/test.scenic",
+scenario = scenic.scenarioFromFile("/home/kxu/ScenicGym/src/scenic/simulators/crowd_sim/training_scenario.scenic",
                                    model="scenic.simulators.crowd_sim.model") # shouldn't use 2D mode?
 
 # env = ScenicGymEnv(scenario, CrowdSimSimulator(), max_steps=50)
